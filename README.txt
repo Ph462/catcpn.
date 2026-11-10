@@ -1,25 +1,28 @@
-CAT PHOENIX — MEDIA HUB
+CAT PHOENIX — CINEMA & MUSIC V3
 
-A responsive media discovery website with:
-- Movie search using the Internet Archive public collection.
-- Music search using Apple's iTunes Search API.
-- Official detail/listen links and public-collection download directory links.
-- Mobile-friendly layout.
+This version adds a fuller entertainment homepage:
+- Trending TV/series discoveries (TVmaze search catalogue)
+- Latest movie discoveries from Internet Archive's public movie collection
+- K-drama collection search shortcuts
+- Action and adventure series discoveries
+- Music album discovery via Apple's iTunes Search API
+- Global search for movies, series and music
+- Responsive mobile navigation and polished cards/tiles
 
 RUN
-1. Extract the ZIP.
-2. Open the folder in VS Code, Acode, or another editor.
-3. For best results, run a local web server (for example VS Code Live Server).
-4. Open index.html in a browser and search.
+1. Download and extract the ZIP.
+2. Open the folder in Acode or VS Code.
+3. Open index.html in a modern browser, preferably through a local web server.
+4. Keep an internet connection active: the live catalogue sections use public APIs.
 
-IMPORTANT
-- This site does not host media files.
-- Internet Archive items may have different rights and availability. Check each item's details and license before downloading or reusing it.
-- Music results link to Apple's catalog; this site does not provide unauthorized music downloads.
-- Search requires an internet connection.
-- The Google Fonts import is optional; the site uses fallback fonts if unavailable.
+NOTES
+- The "Trending" and "Action" areas are discovery shelves built from selected catalogue searches, not official real-time popularity rankings.
+- The K-drama shelf uses title searches for selected Korean series. You can search any title in the search bar.
+- Latest movie discoveries are sorted by Internet Archive public date; this does not necessarily mean recent cinema releases.
+- The website does not host media. Internet Archive item rights vary; check item details before downloading or reusing. Music catalogue links/previews are provided by Apple. TV metadata is provided by TVmaze.
+- API availability and browser cross-origin rules can affect live results.
 
 FILES
-index.html — page structure
-style.css — visual design and responsive layout
-app.js — search and result rendering
+index.html — full homepage sections
+style.css — design and responsive layout
+app.js — live catalogue/search logic

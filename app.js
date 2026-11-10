@@ -1,37 +1,33 @@
-const input=document.getElementById('searchInput');
-const results=document.getElementById('results');
-const title=document.getElementById('resultsTitle');
-const count=document.getElementById('resultCount');
-const filters=[...document.querySelectorAll('.filter')];
-let activeType='all', timer;
-document.getElementById('year').textContent=new Date().getFullYear();
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const input=$('#searchInput'), results=$('#resultsGrid');
+let activeType='all', debounce;
+$('#year').textContent=new Date().getFullYear();
+function esc(v=''){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
+$('#menu').onclick=()=>$('#nav').classList.toggle('open');
+$$('.nav a').forEach(a=>a.onclick=()=>$('#nav').classList.remove('open'));
+$('#clearSearch').onclick=()=>{input.value='';input.focus()};
+$$('.tab').forEach(b=>b.onclick=()=>{$$('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');activeType=b.dataset.type;if(input.value.trim())search()});
+$('#searchButton').onclick=search;
+input.addEventListener('keydown',e=>{if(e.key==='Enter')search()});
+input.addEventListener('input',()=>{clearTimeout(debounce);if(input.value.trim().length>2)debounce=setTimeout(search,650)});
 
-filters.forEach(btn=>btn.addEventListener('click',()=>{filters.forEach(x=>x.classList.remove('active'));btn.classList.add('active');activeType=btn.dataset.type;if(input.value.trim())search();}));
-document.getElementById('searchBtn').addEventListener('click',search);
-input.addEventListener('keydown',e=>{if(e.key==='Enter')search();});
-input.addEventListener('input',()=>{clearTimeout(timer);if(input.value.trim().length>2)timer=setTimeout(search,650);});
+function card(item){const img=item.image?`<img src="${esc(item.image)}" alt="" loading="lazy" onerror="this.remove()">`:`<span class="image-fallback">${item.kind==='MUSIC'?'♫':'▶'}</span>`;
+const action=item.download?`<a href="${esc(item.download)}" target="_blank" rel="noopener noreferrer">DOWNLOAD ↗</a>`:`<a href="${esc(item.link)}" target="_blank" rel="noopener noreferrer">OPEN ↗</a>`;
+return `<article class="media-card"><div class="media-image">${img}</div><div class="media-content"><span class="type-label">${esc(item.kind)}</span><h3 title="${esc(item.name)}">${esc(item.name)}</h3><p>${esc(item.detail||'')}</p><div class="card-links"><a href="${esc(item.link)}" target="_blank" rel="noopener noreferrer">DETAILS ↗</a>${action}</div></div></article>`}
+function fill(id,items){$(id).innerHTML=items.length?items.map(card).join(''):'<div class="loading-card">No titles available right now. Try the search bar.</div>'}
+function showError(id){$(id).innerHTML='<div class="loading-card">Could not load this collection. Use search or check your connection.</div>'}
 
-function toast(message){const el=document.getElementById('toast');el.textContent=message;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2600);}
-function escapeHTML(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function card(item){const image=item.image?`<img src="${escapeHTML(item.image)}" alt="" loading="lazy" onerror="this.remove()">`:`<span class="fallback">${item.kind==='MOVIE'?'▶':'♫'}</span>`;
-return `<article class="card"><div class="cover">${image}</div><div class="card-body"><span class="card-type">${item.kind}</span><h3 title="${escapeHTML(item.name)}">${escapeHTML(item.name)}</h3><p title="${escapeHTML(item.detail)}">${escapeHTML(item.detail)}</p><div class="card-actions"><a href="${escapeHTML(item.link)}" target="_blank" rel="noopener noreferrer">DETAILS ↗</a>${item.download?`<a class="download" href="${escapeHTML(item.download)}" target="_blank" rel="noopener noreferrer">DOWNLOAD ↓</a>`:`<a class="download" href="${escapeHTML(item.link)}" target="_blank" rel="noopener noreferrer">LISTEN ↗</a>`}</div></div></article>`;}
-function show(items){if(!items.length){results.innerHTML='<article class="empty-card"><div class="empty-icon">⌕</div><h3>No results found</h3><p>Try another title or artist name.</p></article>';count.textContent='0 RESULTS';return;}results.innerHTML=items.map(card).join('');count.textContent=`${items.length} RESULTS`;}
-async function search(){
- const q=input.value.trim();if(!q){toast('Type a movie, artist or song first.');return;}
- title.textContent=`Results for “${q}”`;results.innerHTML='<article class="empty-card"><div class="empty-icon">◌</div><h3>Searching the web...</h3><p>Finding matching media.</p></article>';count.textContent='SEARCHING';
- const jobs=[];
- if(activeType==='all'||activeType==='movies')jobs.push(searchMovies(q));
- if(activeType==='all'||activeType==='music')jobs.push(searchMusic(q));
- try{const groups=await Promise.all(jobs);show(groups.flat().slice(0,24));}catch(e){results.innerHTML='<article class="empty-card"><h3>Search temporarily unavailable</h3><p>Check your connection and try again.</p></article>';count.textContent='ERROR';}
+async function tvSearch(q){const r=await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(q)}`);if(!r.ok)throw Error('TV search');const j=await r.json();return j.map(x=>({kind:'SERIES',name:x.show.name,detail:[x.show.premiered?.slice(0,4),x.show.genres?.slice(0,2).join(' • '),x.show.network?.name||x.show.webChannel?.name].filter(Boolean).join(' • '),image:x.show.image?.original||x.show.image?.medium,link:x.show.url}))}
+async function archiveSearch(q,sortLatest=false){let url=`https://archive.org/advancedsearch.php?q=${encodeURIComponent(`(${q}) AND mediatype:movies`)}&fl[]=identifier,title,year&rows=10&page=1&output=json`;if(sortLatest)url+='&sort[]=publicdate+desc';const r=await fetch(url);if(!r.ok)throw Error('Archive search');const j=await r.json();return(j.response?.docs||[]).map(x=>({kind:'MOVIE',name:x.title||x.identifier,detail:`Internet Archive${x.year?' • '+x.year:''}`,image:`https://archive.org/services/img/${encodeURIComponent(x.identifier)}`,link:`https://archive.org/details/${encodeURIComponent(x.identifier)}`,download:`https://archive.org/download/${encodeURIComponent(x.identifier)}/`}))}
+async function musicSearch(q,entity='album'){const r=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=${entity}&limit=10`);if(!r.ok)throw Error('Music search');const j=await r.json();return(j.results||[]).map(x=>({kind:'MUSIC',name:x.collectionName||x.trackName,detail:[x.artistName,x.primaryGenreName].filter(Boolean).join(' • '),image:(x.artworkUrl100||'').replace('100x100','300x300'),link:x.collectionViewUrl||x.trackViewUrl,download:null}))}
+async function loadCollections(){
+ try{const q=await Promise.all(['squid game','the last of us','stranger things','breaking bad'].map(tvSearch));fill('#trendingCards',q.flat().slice(0,8))}catch(e){showError('#trendingCards')}
+ try{fill('#latestCards',await archiveSearch('public domain',true))}catch(e){showError('#latestCards')}
+ try{const q=await Promise.all(['Crash Landing on You','Goblin Korean drama','Extraordinary Attorney Woo','Vincenzo Korean drama'].map(tvSearch));const unique=[...new Map(q.flat().map(x=>[x.name,x])).values()];fill('#kdramaCards',unique.slice(0,10))}catch(e){showError('#kdramaCards')}
+ try{const q=await Promise.all(['action adventure','warrior','superhero'].map(tvSearch));fill('#actionCards',q.flat().slice(0,8))}catch(e){showError('#actionCards')}
+ try{fill('#musicCards',await musicSearch('global hits','album'))}catch(e){showError('#musicCards')}
 }
-async function searchMovies(q){
- // Internet Archive advanced search surfaces items in its public collection.
- const url=`https://archive.org/advancedsearch.php?q=${encodeURIComponent(`(${q}) AND mediatype:movies`)}&fl[]=identifier,title,description,year&rows=12&page=1&output=json`;
- const r=await fetch(url);if(!r.ok)throw Error('Archive search failed');const data=await r.json();
- return (data.response?.docs||[]).map(x=>({kind:'MOVIE',name:x.title||x.identifier,detail:`Internet Archive${x.year?' • '+x.year:''}`,image:`https://archive.org/services/img/${encodeURIComponent(x.identifier)}`,link:`https://archive.org/details/${encodeURIComponent(x.identifier)}`,download:`https://archive.org/download/${encodeURIComponent(x.identifier)}/`}));
-}
-async function searchMusic(q){
- const url=`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=song&limit=12`;
- const r=await fetch(url);if(!r.ok)throw Error('Music search failed');const data=await r.json();
- return (data.results||[]).map(x=>({kind:'MUSIC',name:x.trackName||x.collectionName,detail:`${x.artistName||'Unknown artist'} • ${x.collectionName||'Single'}`,image:(x.artworkUrl100||'').replace('100x100','300x300'),link:x.trackViewUrl||x.collectionViewUrl,download:null}));
-}
+async function search(){const q=input.value.trim();if(!q){toast('Type a title, artist or song to search.');return}$('#searchResultsSection').scrollIntoView({behavior:'smooth',block:'start'});$('#resultsHeading').textContent=`Results for “${q}”`;$('#resultCount').textContent='SEARCHING';results.innerHTML='<div class="loading-card">Searching movie, TV and music catalogues…</div>';
+try{const jobs=[];if(activeType==='all'||activeType==='movies')jobs.push(archiveSearch(q));if(activeType==='all'||activeType==='shows')jobs.push(tvSearch(q));if(activeType==='all'||activeType==='music')jobs.push(musicSearch(q,'song'));const groups=await Promise.all(jobs);const all=groups.flat();results.innerHTML=all.length?all.slice(0,25).map(card).join(''):'<div class="empty-state"><span>⌕</span><h3>No matching titles found</h3><p>Try another spelling or search term.</p></div>';$('#resultCount').textContent=`${all.length} RESULTS`}catch(e){results.innerHTML='<div class="empty-state"><h3>Search could not be completed</h3><p>Check your internet connection and try again.</p></div>';$('#resultCount').textContent='ERROR'}}
+loadCollections();
