@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080b14">
+  <title>CAT PHOENIX — Media Hub</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+  <header class="topbar">
+    <a class="brand" href="#"><span class="brand-mark">CP</span><span>CAT <b>PHOENIX</b><small>MEDIA HUB</small></span></a>
+    <nav><a href="#discover">Discover</a><a href="#movies">Movies</a><a href="#music">Music</a></nav>
+    <span class="status"><i></i> ONLINE</span>
+  </header>
+
+  <main>
+    <section class="hero" id="discover">
+      <div class="hero-copy">
+        <p class="eyebrow">YOUR ENTERTAINMENT, ONE PLACE</p>
+        <h1>Find your next<br><em>obsession.</em></h1>
+        <p class="intro">Explore movies and music from across the web. Search, preview, and find official or public-domain ways to watch, listen and download.</p>
+        <div class="hero-actions"><a class="button primary" href="#movies">Explore movies <span>↗</span></a><a class="button ghost" href="#music">Find music</a></div>
+      </div>
+      <div class="hero-art" aria-label="Decorative media artwork">
+        <div class="orbit orbit-a"></div><div class="orbit orbit-b"></div>
+        <div class="poster poster-back"><span>THE<br>UNKNOWN</span><small>FEATURE FILM</small></div>
+        <div class="poster poster-front"><span>PLAY<br>YOUR<br>WORLD</span><small>CAT PHOENIX ORIGINAL</small></div>
+        <div class="play-bubble">▶</div>
+        <div class="floating-note">♫</div>
+      </div>
+    </section>
+
+    <section class="search-panel">
+      <div><p class="eyebrow">SMART SEARCH</p><h2>What are you in the mood for?</h2></div>
+      <div class="search-controls">
+        <div class="search-box"><span>⌕</span><input id="searchInput" type="search" placeholder="Search a movie, artist, song or album..." autocomplete="off"><button id="searchBtn">SEARCH</button></div>
+        <div class="filters"><button class="filter active" data-type="all">All</button><button class="filter" data-type="movies">Movies</button><button class="filter" data-type="music">Music</button></div>
+      </div>
+      <p class="hint">Try a title, genre, artist or song name.</p>
+    </section>
+
+    <section class="results-section" id="movies">
+      <div class="section-heading"><div><p class="eyebrow">CURATED FOR YOU</p><h2 id="resultsTitle">Popular discoveries</h2></div><span id="resultCount" class="result-count">FEATURED</span></div>
+      <div id="results" class="grid">
+        <article class="empty-card"><div class="empty-icon">✦</div><h3>Ready when you are</h3><p>Search above to discover movies and music.</p></article>
+      </div>
+    </section>
+
+    <section class="info-strip" id="music">
+      <div class="info-icon">⬇</div><div><h3>Discover responsibly</h3><p>Movie results come from Internet Archive's public collection. Music results come from Apple's iTunes catalog and provide previews and official store links. Availability and download rights depend on each item.</p></div>
+    </section>
+  </main>
+
+  <footer><a class="brand small-brand" href="#"><span class="brand-mark">CP</span><span>CAT <b>PHOENIX</b><small>MEDIA HUB</small></span></a><p>Explore. Preview. Enjoy. <span>© <span id="year"></span> CAT PHOENIX</span></p></footer>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
